@@ -23,105 +23,107 @@ jobs:
 
   mac-os-catalina-build:
     runs-on: macos-latest
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 10.13
+      LDFLAGS: "-L/usr/local/opt/openssl/lib"
+      CPPFLAGS: "-I/usr/local/opt/openssl/include"
     steps:
       - name: Clone repository
         uses: actions/checkout@v2
       - name: Build repository
         run: |
-          brew install openssl 
+          sudo gcc
           mkdir build
           cd build
-          export LDFLAGS="-L/usr/local/opt/openssl/lib"
-          export CPPFLAGS="-I/usr/local/opt/openssl/include"
-          cmake .. -DBUILD_TEST=TRUE -DCOMPILER_WARNINGS=TRUE
+          cmake .. -DBUILD_TEST=TRUE -DCOMPILER_WARNINGS=TRUE -DBUILD_OPENSSL_PLATFORM=darwin64-x86_64-cc
           make
       - name: Run unit test
         run: |
           export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:`pwd`/../open-source/lib"
           ./tst/webrtc_client_test
 
-  ubuntu-os-build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone repository
-        uses: actions/checkout@v2
-      - name: Build repository
-        run: |
-          # TODO: Remove the following line. This is only a workaround for enabling IPv6, https://github.com/travis-ci/travis-ci/issues/8891.
-          sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6'
-          mkdir build
-          cd build
-          cmake .. -DBUILD_TEST=TRUE
-          make
-      - name: Run unit test
-        run: |
-          cd build
-          export AWS_KVS_LOG_LEVEL=3
-          ./tst/webrtc_client_test
-
-  address-sanitizer:
-    runs-on: ubuntu-18.04
-    env:
-      ASAN_OPTIONS: detect_odr_violation=0:detect_leaks=1
-      LSAN_OPTIONS: suppressions=../tst/suppressions/LSAN.supp
-    steps:
-      - name: Clone repository
-        uses: actions/checkout@v2
-      - name: Build repository
-        run: |
-          # TODO: Remove the following line. This is only a workaround for enabling IPv6, https://github.com/travis-ci/travis-ci/issues/8891.
-          sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6'
-          mkdir build
-          cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TEST=TRUE -DADDRESS_SANITIZER=TRUE
-          make
-      - name: Run unit test
-        run: |
-          cd build
-          export AWS_KVS_LOG_LEVEL=3
-          ulimit -c unlimited -S
-          timeout --signal=SIGABRT 60m ./tst/webrtc_client_test
-
-  undefined-behavior-sanitizer:
-    runs-on: ubuntu-18.04
-    env:
-      UBSAN_OPTIONS: halt_on_error=1
-    steps:
-      - name: Clone repository
-        uses: actions/checkout@v2
-      - name: Build repository
-        run: |
-          # TODO: Remove the following line. This is only a workaround for enabling IPv6, https://github.com/travis-ci/travis-ci/issues/8891.
-          sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6'
-          mkdir build
-          cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TEST=TRUE -DUNDEFINED_BEHAVIOR_SANITIZER=TRUE
-          make
-      - name: Run unit test
-        run: |
-          cd build
-          export AWS_KVS_LOG_LEVEL=3
-          ulimit -c unlimited -S
-          timeout --signal=SIGABRT 60m ./tst/webrtc_client_test
-
-  thread-sanitizer:
-    runs-on: ubuntu-18.04
-    env:
-      TSAN_OPTIONS: halt_on_error=1:suppressions=../tst/suppressions/TSAN.supp
-    steps:
-      - name: Clone repository
-        uses: actions/checkout@v2
-      - name: Build repository
-        run: |
-          # TODO: Remove the following line. This is only a workaround for enabling IPv6, https://github.com/travis-ci/travis-ci/issues/8891.
-          sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6'
-          mkdir build
-          cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TEST=TRUE -DTHREAD_SANITIZER=TRUE
-          make
-      - name: Run unit test
-        run: |
-          cd build
-          export AWS_KVS_LOG_LEVEL=3
-          ulimit -c unlimited -S
-          timeout --signal=SIGABRT 60m ./tst/webrtc_client_test
+#  ubuntu-os-build:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Clone repository
+#        uses: actions/checkout@v2
+#      - name: Build repository
+#        run: |
+#          # TODO: Remove the following line. This is only a workaround for enabling IPv6, https://github.com/travis-ci/travis-ci/issues/8891.
+#          sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6'
+#          mkdir build
+#          cd build
+#          cmake .. -DBUILD_TEST=TRUE
+#          make
+#      - name: Run unit test
+#        run: |
+#          cd build
+#          export AWS_KVS_LOG_LEVEL=3
+#          ./tst/webrtc_client_test
+#
+#  address-sanitizer:
+#    runs-on: ubuntu-18.04
+#    env:
+#      ASAN_OPTIONS: detect_odr_violation=0:detect_leaks=1
+#      LSAN_OPTIONS: suppressions=../tst/suppressions/LSAN.supp
+#    steps:
+#      - name: Clone repository
+#        uses: actions/checkout@v2
+#      - name: Build repository
+#        run: |
+#          # TODO: Remove the following line. This is only a workaround for enabling IPv6, https://github.com/travis-ci/travis-ci/issues/8891.
+#          sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6'
+#          mkdir build
+#          cd build
+#          cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TEST=TRUE -DADDRESS_SANITIZER=TRUE
+#          make
+#      - name: Run unit test
+#        run: |
+#          cd build
+#          export AWS_KVS_LOG_LEVEL=3
+#          ulimit -c unlimited -S
+#          timeout --signal=SIGABRT 60m ./tst/webrtc_client_test
+#
+#  undefined-behavior-sanitizer:
+#    runs-on: ubuntu-18.04
+#    env:
+#      UBSAN_OPTIONS: halt_on_error=1
+#    steps:
+#      - name: Clone repository
+#        uses: actions/checkout@v2
+#      - name: Build repository
+#        run: |
+#          # TODO: Remove the following line. This is only a workaround for enabling IPv6, https://github.com/travis-ci/travis-ci/issues/8891.
+#          sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6'
+#          mkdir build
+#          cd build
+#          cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TEST=TRUE -DUNDEFINED_BEHAVIOR_SANITIZER=TRUE
+#          make
+#      - name: Run unit test
+#        run: |
+#          cd build
+#          export AWS_KVS_LOG_LEVEL=3
+#          ulimit -c unlimited -S
+#          timeout --signal=SIGABRT 60m ./tst/webrtc_client_test
+#
+#  thread-sanitizer:
+#    runs-on: ubuntu-18.04
+#    env:
+#      TSAN_OPTIONS: halt_on_error=1:suppressions=../tst/suppressions/TSAN.supp
+#    steps:
+#      - name: Clone repository
+#        uses: actions/checkout@v2
+#      - name: Build repository
+#        run: |
+#          # TODO: Remove the following line. This is only a workaround for enabling IPv6, https://github.com/travis-ci/travis-ci/issues/8891.
+#          sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6'
+#          mkdir build
+#          cd build
+#          cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TEST=TRUE -DTHREAD_SANITIZER=TRUE
+#          make
+#      - name: Run unit test
+#        run: |
+#          cd build
+#          export AWS_KVS_LOG_LEVEL=3
+#          ulimit -c unlimited -S
+#          timeout --signal=SIGABRT 60m ./tst/webrtc_client_test
