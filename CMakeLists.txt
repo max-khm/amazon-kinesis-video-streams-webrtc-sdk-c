@@ -292,6 +292,24 @@ target_link_libraries(
           ${GPERFTOOLS_PROFILER_LIBRARIES}
           ${EXTRA_DEPS})
 
+target_include_directories(
+        kvsWebrtcClient
+        PUBLIC
+          ${OPEN_SRC_INCLUDE_DIRS}
+          ${OPEN_SRC_INSTALL_PREFIX}/include
+          ${KINESIS_VIDEO_WEBRTC_CLIENT_SRC}/src/include
+          ${KINESIS_VIDEO_WEBRTC_CLIENT_SRC}/src/ice
+)
+
+target_link_directories(
+        kvsWebrtcClient
+        PUBLIC
+         ${OPEN_SRC_INSTALL_PREFIX}/lib
+        PRIVATE
+          ${LIBSRTP_LIBRARY_DIRS}
+          ${LIBWEBSOCKETS_LIBRARY_DIRS}
+)
+
 add_library(kvsWebrtcSignalingClient ${LINKAGE} ${WEBRTC_SIGNALING_CLIENT_SOURCE_FILES})
 
 target_link_libraries(
@@ -308,6 +326,24 @@ target_link_libraries(
          ${GPERFTOOLS_MALLOC_LIBRARIES}
          ${GPERFTOOLS_PROFILER_LIBRARIES}
          ${MBEDTLS_LIBRARIES})
+
+target_include_directories(
+        kvsWebrtcSignalingClient
+        PUBLIC
+          ${OPEN_SRC_INCLUDE_DIRS}
+          ${OPEN_SRC_INSTALL_PREFIX}/include
+          ${KINESIS_VIDEO_WEBRTC_CLIENT_SRC}/src/include
+          ${KINESIS_VIDEO_WEBRTC_CLIENT_SRC}/src/ice
+)
+
+target_link_directories(
+        kvsWebrtcSignalingClient
+        PUBLIC
+          ${OPEN_SRC_INSTALL_PREFIX}/lib
+        PRIVATE
+          ${LIBSRTP_LIBRARY_DIRS}
+          ${LIBWEBSOCKETS_LIBRARY_DIRS}
+)
 
 if (WIN32)
   target_link_libraries(kvsWebrtcClient PRIVATE "Ws2_32" "iphlpapi")
